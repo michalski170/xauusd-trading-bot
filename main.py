@@ -1,9 +1,10 @@
+# -*- coding: utf-8 -*-
 from metaapi_cloud_sdk import MetaApi
 import asyncio
 import time
 
-# KONFIGURACJA
-TOKEN = 'TU_WKLEJ_SWÓJ_API_KEY'
+# CONFIG
+TOKEN = 'TWOJ_API_KEY_TUTAJ'  # <- wklej tutaj swoj prawdziwy token
 ACCOUNT_ID = 'adc78bd6-3f6d-424c-b3af-ce53a3ecbdfa'
 SYMBOL = 'XAUUSD'
 TIMEFRAME = '10m'
@@ -16,8 +17,8 @@ async def run_bot():
     print('Pobieranie konta...')
     account = await metaapi.metatrader_account_api.get_account(ACCOUNT_ID)
     
-    # Czekaj aż będzie gotowe
-    print('Czekam na połączenie...')
+    # Czekanie na polaczenie
+    print('Czekam na polaczenie...')
     while account.connection_status != 'CONNECTED' or account.synchronization_status != 'DEPLOYED':
         await asyncio.sleep(1)
         account = await metaapi.metatrader_account_api.get_account(ACCOUNT_ID)
@@ -25,24 +26,24 @@ async def run_bot():
     connection = account.get_rpc_connection()
     await connection.connect()
 
-    print('Połączono. Startuję bota...')
+    print('Polaczono. Startuje bot...')
 
     while True:
         try:
-            # Pobieranie danych z wykresu 10m
+            # Pobieranie danych 10m
             candles = await connection.get_candles(SYMBOL, TIMEFRAME, 1000)
             heikin_ashi = build_heikin_ashi(candles)
 
-            # Sygnał
+            # Nowa pozycja
             if not await connection.get_positions():
                 if is_long_signal(heikin_ashi):
-                    print('Wejście LONG')
+                    print('Wejscie LONG')
                     await connection.create_market_buy_order(SYMBOL, 0.01, sl=heikin_ashi[-1]['close'] - SL_POINTS * 0.1)
                 elif is_short_signal(heikin_ashi):
-                    print('Wejście SHORT')
+                    print('Wejscie SHORT')
                     await connection.create_market_sell_order(SYMBOL, 0.01, sl=heikin_ashi[-1]['close'] + SL_POINTS * 0.1)
 
-            # Zamknięcie pozycji
+            # Wyjscie
             positions = await connection.get_positions()
             if positions:
                 side = positions[0]['type']
@@ -56,7 +57,7 @@ async def run_bot():
             await asyncio.sleep(60)
 
         except Exception as e:
-            print(f'Błąd: {e}')
+            print(f'Blad: {e}')
             await asyncio.sleep(5)
 
 
