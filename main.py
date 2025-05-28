@@ -20,9 +20,9 @@ async def run_bot():
     # Czekanie na polaczenie
     print('Czekam na polaczenie...')
     while account.state != 'DEPLOYED':
-    print(f"Stan konta: {account.state}, czekam...")
-    await asyncio.sleep(1)
-    account = await metaapi.metatrader_account_api.get_account(ACCOUNT_ID)
+        print(f"Stan konta: {account.state}, czekam...")
+        await asyncio.sleep(1)
+        account = await metaapi.metatrader_account_api.get_account(ACCOUNT_ID)
 
     connection = account.get_rpc_connection()
     await connection.connect()
